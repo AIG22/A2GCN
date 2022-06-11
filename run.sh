@@ -1,0 +1,9 @@
+python train.py --dataset cora --lr 0.004 --Agnn_lr 0.01 --weight_decay 5e-4 --dropout 0.6 --dprate 0.0
+python train.py --dataset citeseer --lr 0.004 --Agnn_lr 0.02 --weight_decay 5e-4 --dropout 0.5 --dprate 0.3
+python train.py --dataset pubmed --lr 0.003 --Agnn_lr 0.01 --weight_decay 0.0 --dropout 0.5 --dprate 0.0
+python train.py --dataset chameleon --lr 0.05 --Agnn_lr 0.05 --weight_decay 0.0 --dropout 0.5 --dprate 0.6
+python train.py --dataset squirrel --lr 0.02 --Agnn_lr 0.05 --weight_decay 0.0 --dropout 0.5 --dprate 0.6
+python train.py --dataset film --lr 0.03 --Agnn_lr 0.04  --weight_decay 5e-4 --dropout 0.5 --dprate 0.0
+python train.py --dataset texas --lr 0.05 --Agnn_lr 0.005 --weight_decay 5e-4 --dropout 0.3 --dprate 0.1
+python train.py --dataset cornell --lr 0.05 --Agnn_lr 0.005 --weight_decay 5e-4 --dropout 0.3 --dprate 0.3
+python train.py --dataset wisconsin --lr 0.04 --Agnn_lr 0.004 --weight_decay 5e-4 --dropout 0.3 --dprate 0.3
