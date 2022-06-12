@@ -31,8 +31,7 @@ for repeat in range(10):
         args.dataset,
         split_path
     )
-    #print(edge_index)
-    #print(labels)
+    
     # load data
     #adj, features, labels, labels_oneHot, train_idx, val_idx, test_idx = load_data(args.dataset, repeat, args.device, args.self_loop)
     print('Data load init finish')
@@ -66,8 +65,7 @@ for repeat in range(10):
         val_loss = F.nll_loss(logits[val_idx], labels[val_idx])
         val_acc = accuracy(logits[val_idx], labels[val_idx])
         test_acc = accuracy(logits[test_idx], labels[test_idx])
-        if test_acc >= best_test_acc:
-            best_test_acc = test_acc
+        
         if val_acc >= best_val_acc and test_acc >= best_test_acc:
             best_loss = val_loss
             best_val_acc = val_acc
@@ -80,6 +78,8 @@ for repeat in range(10):
             print('\nEarly stopping at epoch {}'.format(epoch))
             running_epoch = epoch
             break
+        if test_acc >= best_test_acc:
+            best_test_acc = test_acc
 
         sys.stdout.flush()
         sys.stdout.write('\r')
@@ -100,7 +100,7 @@ for repeat in range(10):
     print('\nAGNN best_val_epoch: {}, test_acc: {:.4f}, f1:{:.4f},nmi:{:.4f},mad:{:.4f}'.format(best_epoch, test_acc, macro_f1,
                                                                                        nmi,test_mad))
 
-    #print('\nBM-GCN best_val_epoch: {}, test_acc: {:.4f}'.format(best_epoch, test_acc))
+    
     #print(avg)
     #print('\n')
     #print(std)
@@ -108,18 +108,18 @@ for repeat in range(10):
     acc.append(round(test_acc.item(), 4))
     f1.append(round(macro_f1.item(), 4))
     NMI.append(round(nmi.item(), 4))
-    mad.append(round(test_mad.item(), 4))
+    #mad.append(round(test_mad.item(), 4))
 
-avgmad = sum(mad)/10
+#avgmad = sum(mad)/10
 avg = sum(acc) / 10
 N = sum(NMI) / 10
 m1=np.std(acc)
 m2=np.std(NMI)
-f = open("./res/{}.txt".format(args.dataset),'a')
-f.write("lr:{},ber_lr:{}, wd:{} ,drop:{},drape:{}, acc_test:{},m1:{},nmi:{},m2:{},mad:{:.4f}".format(args.lr, args.Agnn_lr,args.weight_decay,args.dropout,args.dprate,avg,m1,N,m2,avgmad ))
-f.write("\n")
-f.close()
-print('Avg mad: {:.4f}'.format(sum(mad) / 10))
+#f = open("./res/{}.txt".format(args.dataset),'a')
+#f.write("lr:{},ber_lr:{}, wd:{} ,drop:{},drape:{}, acc_test:{},m1:{},nmi:{},m2:{},mad:{:.4f}".format(args.lr, args.Agnn_lr,args.weight_decay,args.dropout,args.dprate,avg,m1,N,m2,avgmad ))
+#f.write("\n")
+#f.close()
+#print('Avg mad: {:.4f}'.format(sum(mad) / 10))
 print('Result: {}'.format(acc))
 print('Avg acc: {:.4f}'.format(sum(acc) / 10))
 print('acc std: {:.4f}'.format(np.std(acc)))
