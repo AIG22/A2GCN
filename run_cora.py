@@ -49,7 +49,7 @@ for repeat in range(10):
      #                             {'params': model.lin2.parameters(), 'weight_decay': args.weight_decay, 'lr': args.lr},
      #                             {'params': model.prop1.parameters(), 'weight_decay': 0.00, 'lr': args.Agnn_lr}])
 
-    model.load_state_dict(torch.load('checkpoint/{}_{}_best_AGCN'.format('cora',repeat)))
+    model.load_state_dict(torch.load('checkpoint/{}_{}_best_AGCN'.format(args.dataset,repeat)))
     model.eval()
     logits = model(features, adj)
 
