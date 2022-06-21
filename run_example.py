@@ -3,7 +3,7 @@ import torch
 import torch.nn.functional as F
 import utils
 from args import parameter_parser
-from model import AGNN
+from model import AGCN
 from utils import load_data, set_seed, accuracy, distance
 from sklearn.metrics import f1_score
 from sklearn import metrics
@@ -34,14 +34,13 @@ for repeat in range(10):
         split_path
     )
 
-    # load data
-    # adj, features, labels, labels_oneHot, train_idx, val_idx, test_idx = load_data(args.dataset, repeat, args.device, args.self_loop)
+    
     print('Data load init finish')
     print(' Num nodes: {} | Num features: {} | Num classes: {}'.format(
         adj.shape[0], feat_dim, class_dim))
 
     # init model
-    model = AGNN(feat_dim, args.hidden, class_dim, args)
+    model = AGCN(feat_dim, args.hidden, class_dim, args)
     model.cuda()
 
 
