@@ -3,7 +3,7 @@ import torch
 import torch.nn.functional as F
 import utils
 from args import parameter_parser
-from model import AGNN
+from model import AGCN
 from utils import load_data, set_seed, accuracy,distance
 from sklearn.metrics import f1_score
 from sklearn import metrics
@@ -39,7 +39,7 @@ for repeat in range(10):
          adj.shape[0], feat_dim, class_dim))
 
     # init model
-    model= AGNN(feat_dim, args.hidden, class_dim, args)
+    model= AGCN(feat_dim, args.hidden, class_dim, args)
     model.cuda()
 
     #optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
@@ -97,7 +97,7 @@ for repeat in range(10):
     nmi = metrics.normalized_mutual_info_score(labels[test_idx].cpu(),
                                                logits[test_idx].max(1)[1].cpu().data.numpy())
 
-    print('\nAGNN best_val_epoch: {}, test_acc: {:.4f}, f1:{:.4f},nmi:{:.4f},mad:{:.4f}'.format(best_epoch, test_acc, macro_f1,
+    print('\nAGCN best_val_epoch: {}, test_acc: {:.4f}, f1:{:.4f},nmi:{:.4f},mad:{:.4f}'.format(best_epoch, test_acc, macro_f1,
                                                                                        nmi,test_mad))
 
     
