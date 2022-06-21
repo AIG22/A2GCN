@@ -45,7 +45,7 @@ for repeat in range(10):
     #optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     optimizer = torch.optim.Adam([{'params': model.lin1.parameters(), 'weight_decay': args.weight_decay, 'lr': args.lr},
                                   {'params': model.lin2.parameters(), 'weight_decay': args.weight_decay, 'lr': args.lr},
-                                  {'params': model.prop1.parameters(), 'weight_decay': 0.00, 'lr': args.Agnn_lr}])
+                                  {'params': model.prop1.parameters(), 'weight_decay': 0.00, 'lr': args.Agcn_lr}])
 
     best_epoch, best_val_acc,best_test_acc = -1, 0.,0.
     best_loss = 1000
@@ -116,7 +116,7 @@ N = sum(NMI) / 10
 m1=np.std(acc)
 m2=np.std(NMI)
 #f = open("./res/{}.txt".format(args.dataset),'a')
-#f.write("lr:{},ber_lr:{}, wd:{} ,drop:{},drape:{}, acc_test:{},m1:{},nmi:{},m2:{},mad:{:.4f}".format(args.lr, args.Agnn_lr,args.weight_decay,args.dropout,args.dprate,avg,m1,N,m2,avgmad ))
+#f.write("lr:{},ber_lr:{}, wd:{} ,drop:{},drape:{}, acc_test:{},m1:{},nmi:{},m2:{},mad:{:.4f}".format(args.lr, args.Agcn_lr,args.weight_decay,args.dropout,args.dprate,avg,m1,N,m2,avgmad ))
 #f.write("\n")
 #f.close()
 #print('Avg mad: {:.4f}'.format(sum(mad) / 10))
