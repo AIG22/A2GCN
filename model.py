@@ -58,9 +58,9 @@ class Lf_prop(Module):
                + str(self.out_features) + ')'
 
 
-class AGNN(nn.Module):
+class AGCN(nn.Module):
     def __init__(self, nfeat, nhid, nclass,args):
-        super(AGNN, self).__init__()
+        super(AGCN, self).__init__()
         self.lin1 = Linear(nfeat, nhid)
         self.lin2 = Linear(nhid, nclass)
         self.prop1 = Lf_prop(args.K,nclass)
