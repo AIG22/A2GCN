@@ -15,7 +15,7 @@ def parameter_parser():
     parser.add_argument('--K', type=int, default=10, help='propagation steps.')
     parser.add_argument('--dprate', type=float, default=0.6, help='dropout for propagation layer.')
     parser.add_argument('--split', type=str, default="DEFAULT", help='data split to use')
-    parser.add_argument('--dataset', type=str, choices=['cora','citeseer','pubmed','computers','photo','chameleon','squirrel','actor','texas','cornell','wisconsin','film'],
+    parser.add_argument('--dataset', type=str, choices=['cora','citeseer','pubmed','chameleon','squirrel','actor','texas','cornell','wisconsin','film'],
                         default='cora')
     parser.add_argument('--net', type=str, choices=['GCN', 'GAT', 'APPNP', 'ChebNet', 'GPRGNN','AGCN','MLP'], default='AGCN')
     parser.add_argument('--Agcn_lr', type=float, default=0.05, help='learning rate for BernNet propagation layer.')
