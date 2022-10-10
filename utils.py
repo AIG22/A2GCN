@@ -9,35 +9,8 @@ import networkx as nx
 import numpy as np
 import scipy.sparse as sp
 import torch
-import model
-from numpy import inf
+from torch_geometric.utils import to_scipy_sparse_matrix
 root = os.path.split(__file__)[0]
-
-def sparse_mx_to_torch_sparse_tensor(sparse_mx):
-    """Convert a scipy sparse matrix to a torch sparse tensor."""
-    sparse_mx = sparse_mx.tocoo().astype(np.float32)
-    indices = torch.from_numpy(
-        np.vstack((sparse_mx.row, sparse_mx.col)).astype(np.int64))
-    values = torch.from_numpy(sparse_mx.data)
-    shape = torch.Size(sparse_mx.shape)
-    return torch.sparse.FloatTensor(indices, values, shape)
-def parse_index_file(filename):
-    """Parse index file."""
-    index = []
-    for line in open(filename):
-        index.append(int(line.strip()))
-    return index
-
-def setup_seed(seed, cuda):
-    torch.manual_seed(seed)
-    np.random.seed(seed)
-    random.seed(seed)
-    os.environ['PYTHONHASHSEED'] = str(seed)
-    if cuda is True:
-        torch.cuda.manual_seed_all(seed)
-        torch.backends.cudnn.benchmark = False
-        torch.backends.cudnn.deterministic = True
-
 def distance(fea):
     #eq 1-2 masked cos similarity
     A = fea.cpu().detach().numpy()
@@ -49,6 +22,36 @@ def distance(fea):
     smvi= (np.sum(D, axis=-1, keepdims=True))/(fea.shape[0]-1)
     dis = (np.sum(smvi))/fea.shape[0]
     return dis
+def set_seed(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+
+def to_sparse_tensor(edge_index):
+    """Convert edge_index to sparse matrix"""
+    sparse_mx = to_scipy_sparse_matrix(edge_index)
+    """Convert a scipy sparse matrix to a torch sparse tensor."""
+    if not isinstance(sparse_mx, sp.coo_matrix):
+        sparse_mx = sp.coo_matrix(sparse_mx)
+    sparse_mx = sparse_mx.tocoo().astype(np.float32)
+    indices = torch.LongTensor(np.array([sparse_mx.row, sparse_mx.col]))
+    values = torch.from_numpy(sparse_mx.data)
+    shape = torch.Size(sparse_mx.shape)
+    return torch.sparse_coo_tensor(
+        indices=indices,
+        values=values,
+        size=shape
+    )
+def parse_index_file(filename):
+    """Parse index file."""
+    index = []
+    for line in open(filename):
+        index.append(int(line.strip()))
+    return index
+
+
+
 def get_mask(idx, l):
     """Create mask."""
     mask = np.zeros(l)
@@ -63,6 +66,41 @@ def normalize_adj(adj):
    d_mat_inv_sqrt = sp.diags(d_inv_sqrt)
    return (d_mat_inv_sqrt.dot(adj).dot(d_mat_inv_sqrt)).tocoo()
 
+def normalized_laplacian(adj):
+   adj = sp.coo_matrix(adj)
+   row_sum = np.array(adj.sum(1))
+   d_inv_sqrt = np.power(row_sum, -0.5).flatten()
+   d_inv_sqrt[np.isinf(d_inv_sqrt)] = 0.
+   d_mat_inv_sqrt = sp.diags(d_inv_sqrt)
+   return (sp.eye(adj.shape[0]) - d_mat_inv_sqrt.dot(adj).dot(d_mat_inv_sqrt)).tocoo()
+
+def gcn(adj):
+   adj = sp.coo_matrix(adj)
+   row_sum = np.array(adj.sum(1))
+   d_inv_sqrt = np.power(row_sum, -0.5).flatten()
+   d_inv_sqrt[np.isinf(d_inv_sqrt)] = 0.
+   d_mat_inv_sqrt = sp.diags(d_inv_sqrt)
+   return (sp.eye(adj.shape[0]) + d_mat_inv_sqrt.dot(adj).dot(d_mat_inv_sqrt)).tocoo()
+
+def aug_normalized_adjacency(adj):
+   adj = adj + sp.eye(adj.shape[0])
+   adj = sp.coo_matrix(adj)
+   row_sum = np.array(adj.sum(1))
+   d_inv_sqrt = np.power(row_sum, -0.5).flatten()
+   d_inv_sqrt[np.isinf(d_inv_sqrt)] = 0.
+   d_mat_inv_sqrt = sp.diags(d_inv_sqrt)
+   return d_mat_inv_sqrt.dot(adj).dot(d_mat_inv_sqrt).tocoo()
+
+def II_normalized_adjacency(adj):
+   adj_hat = 2*sp.eye(adj.shape[0])-adj
+   adj_hat = sp.coo_matrix(adj_hat)
+   adj =adj + 2*sp.eye(adj.shape[0])
+   row_sum = np.array(adj.sum(1))
+   d_inv_sqrt = np.power(row_sum, -0.5).flatten()
+   d_inv_sqrt[np.isinf(d_inv_sqrt)] = 0.
+   d_mat_inv_sqrt = sp.diags(d_inv_sqrt)
+   return d_mat_inv_sqrt.dot(adj_hat).dot(d_mat_inv_sqrt).tocoo()
+
 def norm_feat(features):
     """Row-normalize feature matrix and convert to tuple representation"""
     row_sum = np.array(features.sum(1))
@@ -73,11 +111,16 @@ def norm_feat(features):
     features = r_mat_inv.dot(features)
     return features
 
-def set_seed(seed):
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
+def sys_normalized_adjacency(adj):
+    adj = sp.coo_matrix(adj)
+    adj = adj + sp.eye(adj.shape[0])
+    row_sum = np.array(adj.sum(1))
+    row_sum = (row_sum == 0) * 1 + row_sum
+    d_inv_sqrt = np.power(row_sum, -0.5).flatten()
+    d_inv_sqrt[np.isinf(d_inv_sqrt)] = 0.
+    d_mat_inv_sqrt = sp.diags(d_inv_sqrt)
+    adj = d_mat_inv_sqrt.dot(adj).dot(d_mat_inv_sqrt)
+    return adj.tocoo()
 
 def accuracy(output, labels):
     preds = output.max(1)[1].type_as(labels)
@@ -85,6 +128,7 @@ def accuracy(output, labels):
     correct = correct.sum()
     return correct / len(labels)
 
+'''
 def sp_to_tensor(sparse_mx):
     """Convert a scipy sparse matrix to a torch sparse tensor."""
     if not isinstance(sparse_mx, sp.coo_matrix):
@@ -98,7 +142,15 @@ def sp_to_tensor(sparse_mx):
         values=values,
         size=shape
     )
-
+'''
+def sparse_mx_to_torch_sparse_tensor(sparse_mx):
+    """Convert a scipy sparse matrix to a torch sparse tensor."""
+    sparse_mx = sparse_mx.tocoo().astype(np.float32)
+    indices = torch.from_numpy(
+        np.vstack((sparse_mx.row, sparse_mx.col)).astype(np.int64))
+    values = torch.from_numpy(sparse_mx.data)
+    shape = torch.Size(sparse_mx.shape)
+    return torch.sparse.FloatTensor(indices, values, shape)
 
 def load_citation(dataset_str):
     names = ['x', 'y', 'tx', 'ty', 'allx', 'ally', 'graph']
@@ -150,11 +202,14 @@ def load_citation(dataset_str):
 
     return adj, features, labels, train_mask, val_mask, test_mask
 
-def load_data(dataset_name, splits_file_path=None,mode='s'):
+
+
+def load_data(dataset_name, splits_file_path=None):
     nx_graph = nx.DiGraph()
     if dataset_name in {'cora', 'citeseer', 'pubmed'}:
         adj, features, labels, _, _, _ = load_citation(dataset_name)
         labels = np.argmax(labels, axis=-1)
+        nclass = len(set(labels.tolist()))
         features = features.todense()
         for i in range(features.shape[0]):
             nx_graph.add_node(i, features=features[i], label=labels[i])
@@ -215,7 +270,7 @@ def load_data(dataset_name, splits_file_path=None,mode='s'):
         labels = np.array(
             [label for _, label in sorted(nx_graph.nodes(data='label'), key=lambda x: x[0])]
         )
-
+        nclass = len(set(labels.tolist()))
     features = norm_feat(features)
     with np.load(splits_file_path) as splits_file:
         train_mask = splits_file['train_mask']
@@ -232,23 +287,13 @@ def load_data(dataset_name, splits_file_path=None,mode='s'):
     val_mask = torch.BoolTensor(val_mask).cuda()
     test_mask = torch.BoolTensor(test_mask).cuda()
     #adj = adj.tocoo()
+
     adj = adj + adj.T.multiply(adj.T > adj) - adj.multiply(adj.T > adj)
-    D = []
-    for i in range(adj.sum(axis=1).shape[0]):
-        D.append(adj.sum(axis=1)[i, 0])
-    D = np.diag(D)
-    l = D - adj
+    adj = sp.coo_matrix(adj)
+    values = adj.data
+    indices = np.vstack((adj.row, adj.col))
+    edge_index = torch.LongTensor(indices).cuda()
 
-    if mode == 's':
-        with np.errstate(divide='ignore'):
-            D_norm = D ** (-0.5)
-        D_norm[D_norm == inf] = 0
-        adj = sp.coo_matrix(D_norm.dot(l).dot(D_norm))
-    elif mode == 'r':
-        with np.errstate(divide='ignore'):
-            D_norm = np.linalg.inv(D)
-        adj = sp.coo_matrix(D_norm.dot(l))
-    adj = sparse_mx_to_torch_sparse_tensor(adj).cuda()
-    #adj = torch.FloatTensor(adj.to_dense()).cuda()
-    return adj, features, labels,  train_mask, val_mask, test_mask, num_features, num_classes
+    #
 
+    return edge_index, features, labels, train_mask, val_mask, test_mask, num_features, num_classes
