@@ -7,7 +7,7 @@ Polynomial Order' <br>
 ```sh
 sh run_example.sh
 ```
-> or run the following Command to reproduce our results:
+> or run the following Command to reproduce our results on Cora:
 ```
 python run_example.py
 ```
