@@ -7,7 +7,7 @@ Polynomial Order' <br>
 ```sh
 sh run_example.sh
 ```
-> or run the following Command:
+> or run the following Command to reproduce our results:
 ```
 python run_example.py
 ```
@@ -16,5 +16,3 @@ python run_example.py
 - torch-geometric <br>
 - Pytorch <br>
 - NumPy<br>
-# Acknowledgements
-> The demo code is implemented based on: "BernNet: Learning Arbitrary Graph Spectral Filters via Bernstein Approximation".(https://arxiv.org/abs/2106.10994)
